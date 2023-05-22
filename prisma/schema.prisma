@@ -8,12 +8,13 @@ datasource db {
 }
 
 model Seller {
-  id     String  @id @default(uuid())
-  name   String
-  phone  String
-  lat    Float
-  long   Float
-  status Boolean @default(false)
+  id      String  @id @default(uuid())
+  name    String
+  phone   String
+  lat     Float
+  long    Float
+  profile String
+  status  Boolean @default(false)
 
   services Service[]
   hours    AvailableHour[]
@@ -29,7 +30,7 @@ model Appointment {
   phone String
   hour  DateTime @unique
 
-  services String[]
+  services Service[]
 
   createdAt DateTime @default(now())
 
@@ -43,6 +44,8 @@ model Service {
   value       Float
 
   createdAt DateTime @default(now())
+
+  appointments Appointment[]
 
   seller   Seller? @relation(fields: [sellerId], references: [id])
   sellerId String?

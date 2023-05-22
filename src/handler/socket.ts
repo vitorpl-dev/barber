@@ -1,13 +1,5 @@
-import { Socket } from 'socket.io';
+import { SocketProvider } from '../provider/implement/SocketProvider';
 
-export function onSocket(client: Socket) {
-	console.log(`Client: [${client.id}] connected!`);
+const socketProvider = new SocketProvider();
 
-	client.on('add', () => {});
-
-	client.on('send', () => {});
-
-	client.on('disconnect', async () => {
-		console.log(`Client: [${client.id}] disconnected!`);
-	});
-}
+export { socketProvider };

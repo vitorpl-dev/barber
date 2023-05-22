@@ -1,6 +1,6 @@
-import { Appointment, Seller } from '@prisma/client';
+import { Appointment, AvailableHour, Seller, Service } from '@prisma/client';
 import { prisma } from '../../database/client';
-import { IAddSellerHours, ICreateAppointment, ICreateSeller, IGetAppointmentBetweenDate, IRepository, IUpdateAppointment, IUpdateSeller } from '../IRepository';
+import { IAddSellerHour, IAddSellerService, ICreateAppointment, ICreateSeller, IDeleteAppointmentById, IGetAppointmentBetweenDate, IGetSellerHours, IGetServicesByIds, IRepository, ISetSellerStatus, IUpdateAppointment, IUpdateProfileSeller, IUpdateSeller } from '../IRepository';
 
 export class PostgresRepository implements IRepository {
 	async createSeller(props: ICreateSeller): Promise<Seller | null> {
@@ -10,6 +10,7 @@ export class PostgresRepository implements IRepository {
 				phone: props.seller.phone,
 				lat: props.seller.lat,
 				long: props.seller.long,
+				profile: props.seller.profile,
 				services: {
 					createMany: {
 						data: props.services,
@@ -36,7 +37,9 @@ export class PostgresRepository implements IRepository {
 				name: props.appointment.name,
 				phone: props.appointment.phone,
 				hour: props.appointment.hour,
-				services: props.services,
+				services: {
+					connect: props.services,
+				},
 			},
 		});
 
@@ -49,6 +52,23 @@ export class PostgresRepository implements IRepository {
 				id: props.id,
 			},
 			data: props.seller,
+			include: {
+				services: true,
+				hours: true,
+			},
+		});
+
+		return seller;
+	}
+
+	async updateProfileSeller(props: IUpdateProfileSeller): Promise<Seller | null> {
+		const seller = await prisma.seller.update({
+			where: {
+				id: props.id,
+			},
+			data: {
+				profile: props.profile,
+			},
 			include: {
 				services: true,
 				hours: true,
@@ -88,7 +108,29 @@ export class PostgresRepository implements IRepository {
 		return appointments;
 	}
 
-	async addSellerHours(props: IAddSellerHours): Promise<Seller | null> {
+	async getServicesByIds(props: IGetServicesByIds): Promise<Service[] | null> {
+		const services = await prisma.service.findMany({
+			where: {
+				id: {
+					in: props.ids,
+				},
+			},
+		});
+
+		return services;
+	}
+
+	async getSellerHours(props: IGetSellerHours): Promise<AvailableHour | null> {
+		const hour = await prisma.availableHour.findFirst({
+			where: {
+				hour: props.hour,
+			},
+		});
+
+		return hour;
+	}
+
+	async addSellerHour(props: IAddSellerHour): Promise<Seller | null> {
 		const seller = await prisma.seller.update({
 			where: {
 				id: props.id,
@@ -107,5 +149,49 @@ export class PostgresRepository implements IRepository {
 		});
 
 		return seller;
+	}
+
+	async addSellerService(props: IAddSellerService): Promise<Seller | null> {
+		const seller = await prisma.seller.update({
+			where: {
+				id: props.id,
+			},
+			data: {
+				services: {
+					create: props.service,
+				},
+			},
+			include: {
+				services: true,
+				hours: true,
+			},
+		});
+
+		return seller;
+	}
+
+	async setSellerStatus(props: ISetSellerStatus): Promise<Seller | null> {
+		const seller = await prisma.seller.update({
+			where: {
+				id: props.id,
+			},
+			data: {
+				status: props.status,
+			},
+			include: {
+				services: true,
+				hours: true,
+			},
+		});
+
+		return seller;
+	}
+
+	async deleteAppointmentById(props: IDeleteAppointmentById): Promise<void> {
+		await prisma.appointment.delete({
+			where: {
+				id: props.id,
+			},
+		});
 	}
 }
