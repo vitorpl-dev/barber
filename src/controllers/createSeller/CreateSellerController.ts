@@ -9,7 +9,7 @@ export class CreateSellerController {
 	async handle(req: Request, res: Response) {
 		const { name, phone, lat, long, hours, services } = req.body;
 
-		const profile: Buffer = req.file?.buffer ?? (await fs.readFileSync(path.resolve(__dirname, '../../assets/default.png')));
+		const profile: Buffer = await fs.readFileSync(path.resolve(__dirname, '../../assets/default.png'));
 
 		const seller = await this.createSellerUseCase.execute({
 			seller: {

@@ -38,8 +38,11 @@ export class PostgresRepository implements IRepository {
 				phone: props.appointment.phone,
 				hour: props.appointment.hour,
 				services: {
-					connect: props.services,
+					connect: props.services.map((service) => ({ id: service.id })),
 				},
+			},
+			include: {
+				services: true,
 			},
 		});
 
@@ -102,6 +105,14 @@ export class PostgresRepository implements IRepository {
 		return appointments;
 	}
 
+	async getSeller(): Promise<Seller[] | null> {
+		const seller = await prisma.seller.findMany({
+			take: 1,
+		});
+
+		return seller;
+	}
+
 	async getAllAppointments(): Promise<Appointment[] | null> {
 		const appointments = await prisma.appointment.findMany();
 
@@ -128,6 +139,18 @@ export class PostgresRepository implements IRepository {
 		});
 
 		return hour;
+	}
+
+	async getAllAvaliableHours(): Promise<AvailableHour[] | null> {
+		const hours = await prisma.availableHour.findMany();
+
+		return hours;
+	}
+
+	async getAllServices(): Promise<Service[] | null> {
+		const services = await prisma.service.findMany();
+
+		return services;
 	}
 
 	async addSellerHour(props: IAddSellerHour): Promise<Seller | null> {

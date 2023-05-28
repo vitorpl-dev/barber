@@ -4,6 +4,7 @@ import http from 'http';
 import socket from 'socket.io';
 import { errorHandle } from './middleware/error';
 import { onSocket } from './middleware/socket';
+import { router } from './routes';
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +14,8 @@ app.engine('html', ejs.renderFile);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+app.use(router);
 
 app.use(
 	express.static('public', {

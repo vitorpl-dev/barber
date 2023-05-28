@@ -8,17 +8,23 @@ export class CreateAppointmentUseCase {
 	async execute(props: CreateAppointmentDTO) {
 		const data = CreateAppointmentSchema.parse(props);
 
+		const currentTime = new Date();
+		currentTime.setDate(currentTime.getDate() + 1);
+		currentTime.setHours(currentTime.getHours() - 3);
+
+		if (data.hour <= currentTime) throw new Error('Horário não disponível');
+
 		const services = await this.repository.getServicesByIds({
 			ids: data.services,
 		});
 
 		if (!services) throw new Error('Nenhum serviço encontrado!');
 
-		const hour = String(data.hour.getHours()).padStart(2, '0');
-		const minutes = String(data.hour.getMinutes()).padStart(2, '0');
+		const hour = data.hour.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' });
+		const date = data.hour.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
 
 		const hourExists = await this.repository.getSellerHours({
-			hour: `${hour}:${minutes}`,
+			hour,
 		});
 
 		if (!hourExists) throw new Error('Horário não disponível!');
@@ -38,7 +44,7 @@ export class CreateAppointmentUseCase {
 			from: 'notification',
 			data: {
 				title: `Novo agendamento do cliente ${data.name}`,
-				description: `${data.name} marcou um horário para ${hour}:${minutes}`,
+				description: `${data.name} marcou um horário em ${date} às ${hour}`,
 			},
 		});
 

@@ -31,6 +31,10 @@ export interface IGetAppointmentBetweenDate {
 	final: Date;
 }
 
+export interface IGetSeller {
+	seller: Partial<Omit<Seller, 'lat' | 'long' | 'profile' | 'status' | 'createdAt'>>;
+}
+
 export interface IGetServicesByIds {
 	ids: string[];
 }
@@ -68,9 +72,13 @@ export interface IRepository {
 
 	getAllAppointments(): Promise<Appointment[] | null>;
 	getAppointmentsBetweenDate(props: IGetAppointmentBetweenDate): Promise<Appointment[] | null>;
+	getSeller(): Promise<Seller[] | null>;
 
 	getServicesByIds(props: IGetServicesByIds): Promise<Service[] | null>;
 	getSellerHours(props: IGetSellerHours): Promise<AvailableHour | null>;
+
+	getAllAvaliableHours(): Promise<AvailableHour[] | null>;
+	getAllServices(): Promise<Service[] | null>;
 
 	addSellerHour(props: IAddSellerHour): Promise<Seller | null>;
 	addSellerService(props: IAddSellerService): Promise<Seller | null>;
